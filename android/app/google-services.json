@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "580959160610",
+    "project_id": "flutter-video-auto-chat",
+    "storage_bucket": "flutter-video-auto-chat.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:580959160610:android:bf72939bdfcf6d4a673d7b",
+        "android_client_info": {
+          "package_name": "com.example.chatty"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyARp7CgqZ5sjWZAVa_WEACwYwX6AmTkovU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
