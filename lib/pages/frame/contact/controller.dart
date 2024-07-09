@@ -75,7 +75,7 @@ class ContactController extends GetxController {
               fromFirestore: Msg.fromFirestore,
               toFirestore: (Msg msg, options) => msg.toFirestore())
           .add(msgdata);
-      Get.offAllNamed("/chat",parameters: {
+      Get.offAndToNamed("/chat",parameters: {
         "doc_id":doc_id.id,
         "to_token":contactItem.token??"",
         "to_name":contactItem.name??"",
@@ -83,17 +83,17 @@ class ContactController extends GetxController {
         "to_online":contactItem.online.toString()
       });
     }else{
-    if(from_messages.docs.isNotEmpty){
-      Get.toNamed("/chat",parameters: {
+    if(!from_messages.docs.isEmpty){
+      Get.offAndToNamed("/chat",parameters: {
         "doc_id":from_messages.docs.first.id,
         "to_token":contactItem.token??"",
         "to_name":contactItem.name??"",
         "to_avatar":contactItem.avatar??"",
         "to_online":contactItem.online.toString()
       });
-    }if(from_messages.docs.isNotEmpty){
-      Get.toNamed("/chat",parameters: {
-        "doc_id":from_messages.docs.first.id,
+    }if(!to_messages.docs.isEmpty){
+      Get.offAndToNamed("/chat",parameters: {
+        "doc_id":to_messages.docs.first.id,
         "to_token":contactItem.token??"",
         "to_name":contactItem.name??"",
         "to_avatar":contactItem.avatar??"",

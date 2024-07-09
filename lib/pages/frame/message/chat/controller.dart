@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:chatty/common/entities/entities.dart';
 import 'package:chatty/common/routes/names.dart';
 import 'package:chatty/common/store/store.dart';
@@ -6,6 +8,7 @@ import 'package:chatty/pages/frame/message/chat/index.dart';
 import 'package:chatty/pages/frame/message/chat/state.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:get/get.dart';
 
 class ChatController extends GetxController {
@@ -17,6 +20,10 @@ class ChatController extends GetxController {
 
   //firebase data instance
   final db = FirebaseFirestore.instance;
+  var listener;
+  var isLoadMore = true;
+
+  ScrollController myScrollController = ScrollController();
 
   //Sender token
   final token = UserStore.to.profile.token;
@@ -31,6 +38,61 @@ class ChatController extends GetxController {
     state.to_name.value = data['to_name'] ?? "";
     state.to_avatar.value = data['to_avatar'] ?? "";
     state.to_online.value = data['to_online'] ?? "";
+  }
+
+  @override
+  void onReady() {
+    super.onReady();
+    state.msgContentList.clear();
+    final messages = db
+        .collection("message")
+        .doc(doc_id)
+        .collection("msglist")
+        .withConverter(
+            fromFirestore: Msgcontent.fromFirestore,
+            toFirestore: (Msgcontent msg, option) => msg.toFirestore())
+        .orderBy("addtime", descending: true)
+        .limit(15);
+    listener = messages.snapshots().listen((event) {
+      List<Msgcontent> temMsgList = <Msgcontent>[];
+      for (var change in event.docChanges) {
+        switch (change.type) {
+          case DocumentChangeType.added:
+            if (change.doc.data() != null) {
+              temMsgList.add(change.doc.data()!);
+              print(change.doc.data()?.content);
+            }
+            break;
+          case DocumentChangeType.modified:
+            // TODO: Handle this case.
+            break;
+          case DocumentChangeType.removed:
+            // TODO: Handle this case.
+            break;
+        }
+      }
+      //4,3,2,1 => 1,2,3,4
+      temMsgList.reversed.forEach((element) {
+        state.msgContentList.value.insert(0, element);
+      });
+      state.msgContentList.refresh();
+      if (myScrollController.hasClients) {
+        myScrollController.animateTo(
+            myScrollController.position.minScrollExtent,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut);
+      }
+    });
+    myScrollController.addListener(() {
+      if (myScrollController.offset + 20 >
+          myScrollController.position.maxScrollExtent) {
+        if(isLoadMore){
+          state.isLoading.value = true;
+          isLoadMore = false;
+          asyncLoadMoreData();
+        }
+      }
+    });
   }
 
   void goMore() {
@@ -49,36 +111,6 @@ class ChatController extends GetxController {
   }
 
   Future<void> sendMessage() async {
-
-    var list = await db.collection("people").add({
-      "name": myInputController.text,
-      "age": 35,
-      "addtime": Timestamp.now(),
-    });
-
-    var myList = await db
-        .collection("people")
-        .orderBy("addtime", descending: true)
-        .limit(3).snapshots();
-
-    myList.listen((event) {
-      for(var change in event.docChanges){
-        switch(change.type) {
-          case DocumentChangeType.added:
-            print("...added a document oject ${change.doc.id}");
-            break;
-          case DocumentChangeType.modified:
-            print("... changed value ${change.doc["age"]}");
-            break;
-          case DocumentChangeType.removed:
-            // TODO: Handle this case.
-            break;
-        }
-      }
-    });
-    
-
-    
     String sendContent = myInputController.text;
     if (sendContent.isEmpty) {
       toastInfo(msg: "content is empty");
@@ -100,7 +132,6 @@ class ChatController extends GetxController {
             toFirestore: (Msgcontent msg, options) => msg.toFirestore())
         .add(content)
         .then((DocumentReference doc) {
-      print("...base id is :$doc_id new message doc id is ${doc.id}");
       myInputController.clear();
     });
     var messageResult = await db
@@ -127,5 +158,42 @@ class ChatController extends GetxController {
         "last_time": Timestamp.now()
       });
     }
+  }
+
+  Future<void> asyncLoadMoreData() async {
+    final message = await db
+        .collection("message")
+        .doc(doc_id)
+        .collection("msglist")
+        .withConverter(
+            fromFirestore: Msgcontent.fromFirestore,
+            toFirestore: (Msgcontent msg, option) => msg.toFirestore())
+        .orderBy("addtime", descending: true)
+        .where("addtime", isLessThan: state.msgContentList.value.last.addtime)
+        .limit(10)
+        .get();
+    if (message.docs.isNotEmpty) {
+      message.docs.forEach((element) {
+        var data = element.data();
+        state.msgContentList.add(data);
+      });
+    }
+    SchedulerBinding.instance.addPersistentFrameCallback((timeStamp) {
+      isLoadMore = true;
+    });
+    state.isLoading.value = false;
+  }
+
+  @override
+  void onClose() {
+    super.onClose();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    listener.cancel();
+    myScrollController.dispose();
+    myInputController.dispose();
   }
 }

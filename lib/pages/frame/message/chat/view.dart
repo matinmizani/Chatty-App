@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chatty/common/routes/names.dart';
 import 'package:chatty/common/values/colors.dart';
+import 'package:chatty/pages/frame/message/chat/widgets/chat_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -13,17 +14,20 @@ class ChatPage extends GetView<ChatController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.primaryBackground,
       appBar: _appBar(),
       body: Obx(() => Padding(
           padding: const EdgeInsets.all(16.0),
           child: SafeArea(
               child: Stack(
             children: [
+              const ChatList(),
               Positioned(
                   bottom: 0,
                   child: Row(
                     children: [
                       Container(
+                        color: Colors.white,
                         width: MediaQuery.of(context).size.width - 80,
                         constraints: BoxConstraints(
                             minHeight: 50,
