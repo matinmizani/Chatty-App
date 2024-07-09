@@ -25,26 +25,53 @@ class ChatPage extends GetView<ChatController> {
                     children: [
                       Container(
                         width: MediaQuery.of(context).size.width - 80,
-                        decoration: BoxDecoration(
-                            color: AppColors.primaryBackground,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                                color: AppColors.primarySecondaryElementText)),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 8, horizontal: 16),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text("Message...."),
-                              GestureDetector(
-                                child: SizedBox(
-                                  width: 40.w,
-                                  child: Image.asset("assets/icons/send.png"),
-                                ),
-                                onTap: () {},
-                              )
-                            ],
+                        constraints: BoxConstraints(
+                            minHeight: 50,
+                            maxHeight: 200,
+                            minWidth: MediaQuery.of(context).size.width - 80),
+                        child: TextField(
+                          minLines: 1,
+                          maxLines: 20,
+                          controller: controller.myInputController,
+                          textAlign: TextAlign.start,
+                          keyboardType: TextInputType.multiline,
+                          autofocus: false,
+                          decoration: InputDecoration(
+                            suffixIcon: GestureDetector(
+                              child: SizedBox(
+                                  width: 40,
+                                  height: 40,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(5.0),
+                                    child: Image.asset("assets/icons/send.png"),
+                                  )),
+                              onTap: () {
+                                controller.sendMessage();
+                              },
+                            ),
+                            hintText: "Message....",
+                            border: const OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(8)),
+                              borderSide: BorderSide(
+                                color: Colors.grey,
+                              ),
+                            ),
+                            enabledBorder: const OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(8)),
+                              borderSide: BorderSide(color: Colors.grey),
+                            ),
+                            disabledBorder: const OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(8)),
+                              borderSide: BorderSide(color: Colors.grey),
+                            ),
+                            focusedBorder: const OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(8)),
+                              borderSide: BorderSide(color: Colors.grey),
+                            ),
                           ),
                         ),
                       ),
@@ -118,7 +145,7 @@ class ChatPage extends GetView<ChatController> {
                             height: 8,
                           ),
                           GestureDetector(
-                            onTap: (){
+                            onTap: () {
                               controller.audioCall();
                             },
                             child: Container(

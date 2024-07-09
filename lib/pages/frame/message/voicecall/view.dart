@@ -85,7 +85,7 @@ class VoiceCallPage extends GetView<VoiceCallController> {
                           Column(
                             children: [
                               GestureDetector(
-                                onTap: controller.state.inJoined.value
+                                onTap: controller.state.isJoined.value
                                     ? controller.leaChannel
                                     : controller.joinChannel,
                                 child: Container(
@@ -94,17 +94,17 @@ class VoiceCallPage extends GetView<VoiceCallController> {
                                   height: 42,
                                   decoration: BoxDecoration(
                                       shape: BoxShape.circle,
-                                      color: controller.state.inJoined.value
+                                      color: controller.state.isJoined.value
                                           ? AppColors.primaryElementBg
                                           : AppColors.primaryElementStatus),
-                                  child: controller.state.inJoined.value
+                                  child: controller.state.isJoined.value
                                       ? Image.asset("assets/icons/a_phone.png")
                                       : Image.asset(
                                           "assets/icons/a_telephone.png"),
                                 ),
                               ),
                               Text(
-                                controller.state.inJoined.value
+                                controller.state.isJoined.value
                                     ? "Disconnect"
                                     : "Connect",
                                 style: TextStyle(

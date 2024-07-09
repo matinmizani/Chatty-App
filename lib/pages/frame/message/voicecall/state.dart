@@ -2,7 +2,7 @@ import 'package:chatty/common/entities/entities.dart';
 import 'package:get/get.dart';
 
 class VoiceCallState {
-  RxBool inJoined = false.obs;
+  RxBool isJoined = false.obs;
   RxBool openMicrophone = true.obs;
   RxBool enableSpeaker = true.obs;
   RxString callTime = "00.00".obs;

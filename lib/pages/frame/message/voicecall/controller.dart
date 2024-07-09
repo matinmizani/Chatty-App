@@ -33,6 +33,7 @@ class VoiceCallController extends GetxController {
     state.call_role.value = data["call_role"] ?? "";
     state.doc_id.value = data["doc_id"]??"";
     state.to_token.value = data["to_token"]??"";
+    state.callTime.value = data["callTime"]??"00:00";
     initEngine();
   }
 
@@ -48,7 +49,7 @@ class VoiceCallController extends GetxController {
       },
       onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
         print("onConnection ${connection.toJson()}");
-        state.inJoined.value = true;
+        state.isJoined.value = true;
       },
       onUserJoined:
           (RtcConnection connection, int remoteUid, int elasped) async {
@@ -56,11 +57,13 @@ class VoiceCallController extends GetxController {
       },
       onLeaveChannel: (RtcConnection connection, RtcStats stats) {
         print("... user left the room ...");
-        state.inJoined.value = false;
+        state.isJoined.value = false;
       },
       onRtcStats: (RtcConnection connection, RtcStats stats) {
         print("time...");
         print(stats.duration);
+
+
       },
     ));
     await engine.enableAudio();
@@ -72,7 +75,7 @@ class VoiceCallController extends GetxController {
     await joinChannel();
     if (state.call_role == "anchor") {
       //send notification to the other
-      // await sendNotification ('voice');
+      await sendNotification ('voice');
       await player.play();
     }
   }
@@ -85,12 +88,12 @@ class VoiceCallController extends GetxController {
     callRequestEntity.doc_id = state.doc_id.value;
     callRequestEntity.to_name = state.to_name.value;
     print("......the other users token is ${state.to_token.value}");
-    // var res = await ChatAPI.call_notifications(params: callRequestEntity);
-    // if(res.code==0){
-    //   print("notification success");
-    // }else{
-    //   print("notification failed");
-    // }
+    var res = await ChatAPI.call_notifications(params: callRequestEntity);
+    if(res.code==0){
+      print("notification success");
+    }else{
+      print("notification failed");
+    }
   }
 
   Future<String> getToken() async {
@@ -134,8 +137,8 @@ class VoiceCallController extends GetxController {
 
     await engine.joinChannel(
         token:
-            "007eJxTYIha+Xunjn5iokGHv0i8TO2RY/U8h1ivfdAwUVxj1rJwz2MFhkTTxCQTi0Qzi8RUSxOL1CRLM8OUNBNzk1SDpEQLYyPLP8ldaQ2BjAw+q56zMDJAIIjPy5CSVJKanKGbnJFYUlLJwAAASx8i8w==",
-        channelId: "dbtech-chatty",
+            "007eJxTYPh4vaui+RA7n2SY/9p3Zw/tspMLuDXnnFVA95wOx/nH00IUGEwTDS3MU8yTUk0ME02MTZMSDZKNkk0MUlLMTZONDY0sVO92pzUEMjKs/+7AzMgAgSA+P0NuZXxyRmJeXmpOfF5ibioDAwAdeSTw",
+        channelId: "my_channel_name",
         uid: 0,
         options: const ChannelMediaOptions(
             channelProfile: ChannelProfileType.channelProfileLiveBroadcasting,
@@ -149,7 +152,7 @@ class VoiceCallController extends GetxController {
         maskType: EasyLoadingMaskType.clear,
         dismissOnTap: true);
     await player.pause();
-    state.inJoined.value = false;
+    state.isJoined.value = false;
     EasyLoading.dismiss();
     Get.back();
     _dispose();
