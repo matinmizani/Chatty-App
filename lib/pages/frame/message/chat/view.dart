@@ -128,6 +128,9 @@ class ChatPage extends GetView<ChatController> {
                             height: 8,
                           ),
                           GestureDetector(
+                            onTap: (){
+                              controller.imgFromGallery();
+                            },
                             child: Container(
                               padding: const EdgeInsets.all(10),
                               width: 40,

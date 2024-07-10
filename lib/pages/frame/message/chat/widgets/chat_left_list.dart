@@ -1,9 +1,15 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chatty/common/entities/entities.dart';
 import 'package:chatty/common/values/colors.dart';
+import 'package:chatty/common/values/server.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 Widget chatLeftList(Msgcontent item) {
+  String? imagePath;
+  if(item.type=="image"){
+    imagePath =item.content?.replaceAll("http://localhost/", SERVER_API_URL);
+  }
   return Container(
       color: AppColors.primaryBackground,
       padding: EdgeInsets.symmetric(vertical: 5.w),
@@ -29,7 +35,14 @@ Widget chatLeftList(Msgcontent item) {
                         fontSize: 14.sp,
                         color: AppColors.primaryElementText
                     ),)
-                        : const Text("image"))
+                        : ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: 90.w),
+                      child: GestureDetector(
+                        child:
+                        CachedNetworkImage(imageUrl: imagePath!),
+                        onTap: (){},
+                      ),
+                    ))
               ],
             ),
           )

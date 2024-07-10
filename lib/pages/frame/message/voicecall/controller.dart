@@ -137,8 +137,8 @@ class VoiceCallController extends GetxController {
 
     await engine.joinChannel(
         token:
-            "007eJxTYPh4vaui+RA7n2SY/9p3Zw/tspMLuDXnnFVA95wOx/nH00IUGEwTDS3MU8yTUk0ME02MTZMSDZKNkk0MUlLMTZONDY0sVO92pzUEMjKs/+7AzMgAgSA+P0NuZXxyRmJeXmpOfF5ibioDAwAdeSTw",
-        channelId: "my_channel_name",
+            "007eJxTYDhc7tj0RlPg+9P8c3vvfbEVrCxyqDh/QzvL62TK8U+TJtgqMJgYphmkWponGRknG5okm5slmRknppkZJFqmmSUZGRkn/TftTWsIZGTwiGJgYmSAQBBfgCG3Mj45IzEvLzUnPi8xN9WIgQEAjXglUg==",
+        channelId: "my_channel_name2",
         uid: 0,
         options: const ChannelMediaOptions(
             channelProfile: ChannelProfileType.channelProfileLiveBroadcasting,

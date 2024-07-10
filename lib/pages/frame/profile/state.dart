@@ -1,6 +1,7 @@
 import 'package:chatty/common/entities/entities.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 
 class ProfileState{
-  var headDetails = UserItem().obs;
+  var profileDetail = UserItem().obs;
 }

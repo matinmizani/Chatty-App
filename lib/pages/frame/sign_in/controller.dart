@@ -65,10 +65,11 @@ class SignInController extends GetxController {
     if (result.code == 0) {
       await UserStore.to.saveProfile(result.data!);
       EasyLoading.dismiss();
+      Get.offAllNamed(AppRoutes.Message);
     }else{
       EasyLoading.dismiss();
       toastInfo(msg: "Internet error");
+      Get.offAllNamed(AppRoutes.Message);
     }
-    Get.offAllNamed(AppRoutes.Message);
   }
 }

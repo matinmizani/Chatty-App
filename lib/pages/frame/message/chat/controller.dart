@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:io';
 
+import 'package:chatty/common/apis/apis.dart';
 import 'package:chatty/common/entities/entities.dart';
 import 'package:chatty/common/routes/names.dart';
 import 'package:chatty/common/store/store.dart';
@@ -10,6 +12,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 
 class ChatController extends GetxController {
   ChatController();
@@ -17,15 +20,14 @@ class ChatController extends GetxController {
   final state = ChatState();
   late String doc_id;
   final myInputController = TextEditingController();
-
-  //firebase data instance
   final db = FirebaseFirestore.instance;
   var listener;
   var isLoadMore = true;
+  File? _photo;
+  final ImagePicker _picker = ImagePicker();
 
   ScrollController myScrollController = ScrollController();
 
-  //Sender token
   final token = UserStore.to.profile.token;
 
   @override
@@ -38,6 +40,32 @@ class ChatController extends GetxController {
     state.to_name.value = data['to_name'] ?? "";
     state.to_avatar.value = data['to_avatar'] ?? "";
     state.to_online.value = data['to_online'] ?? "";
+    clearMsgNum(doc_id);
+  }
+
+  Future<void> clearMsgNum(String docId) async {
+    var messageResult = await db
+        .collection("message")
+        .doc(doc_id)
+        .withConverter(
+        fromFirestore: Msg.fromFirestore,
+        toFirestore: (Msg msg, options) => msg.toFirestore())
+        .get();
+    //to know if we have any unread messages or calls
+    if (messageResult.data() != null) {
+      var item = messageResult.data()!;
+      int to_msg_num = item.to_msg_num == null ? 0 : item.to_msg_num!;
+      int from_msg_num = item.from_msg_num == null ? 0 : item.from_msg_num!;
+      if (item.from_token == token) {
+        to_msg_num =0;
+      } else {
+        from_msg_num =0;
+      }
+      await db.collection("message").doc(doc_id).update({
+        "to_msg_num": to_msg_num,
+        "from_msg_num": from_msg_num,
+      });
+    }
   }
 
   @override
@@ -86,7 +114,7 @@ class ChatController extends GetxController {
     myScrollController.addListener(() {
       if (myScrollController.offset + 20 >
           myScrollController.position.maxScrollExtent) {
-        if(isLoadMore){
+        if (isLoadMore) {
           state.isLoading.value = true;
           isLoadMore = false;
           asyncLoadMoreData();
@@ -184,9 +212,75 @@ class ChatController extends GetxController {
     state.isLoading.value = false;
   }
 
-  @override
-  void onClose() {
-    super.onClose();
+  Future<void> imgFromGallery() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      _photo = File(pickedFile.path);
+      uploadFile();
+    } else {
+      print("no image selected");
+    }
+  }
+
+  Future<void> uploadFile() async {
+    var result = await ChatAPI.upload_img(file: _photo);
+    print(result.data);
+    if(result.code==0){
+      sendImageMessage(result.data!);
+    }else{
+      toastInfo(msg: "sending image error");
+    }
+  }
+
+  Future<void> sendImageMessage(String url) async {
+
+    //created an object to send to fire base
+    final content = Msgcontent(
+        token: token,
+        content: url,
+        type: "image",
+        addtime: Timestamp.now());
+
+    await db
+        .collection("message")
+        .doc(doc_id)
+        .collection("msglist")
+        .withConverter(
+        fromFirestore: Msgcontent.fromFirestore,
+        toFirestore: (Msgcontent msg, options) => msg.toFirestore())
+        .add(content)
+        .then((DocumentReference doc) {
+    });
+    var messageResult = await db
+        .collection("message")
+        .doc(doc_id)
+        .withConverter(
+        fromFirestore: Msg.fromFirestore,
+        toFirestore: (Msg msg, options) => msg.toFirestore())
+        .get();
+    //to know if we have any unread messages or calls
+    if (messageResult.data() != null) {
+      var item = messageResult.data()!;
+      int to_msg_num = item.to_msg_num == null ? 0 : item.to_msg_num!;
+      int from_msg_num = item.from_msg_num == null ? 0 : item.from_msg_num!;
+      if (item.from_token == token) {
+        from_msg_num = from_msg_num + 1;
+      } else {
+        to_msg_num = to_msg_num + 1;
+      }
+      await db.collection("message").doc(doc_id).update({
+        "to_msg_num": to_msg_num,
+        "from_msg_num": from_msg_num,
+        "last_msg": " [image] ",
+        "last_time": Timestamp.now()
+      });
+    }
+    state.moreStatus.value=false;
+  }
+
+  Future<void> closeAllPop()async{
+    Get.focusScope?.unfocus();
+    state.moreStatus.value = false;
   }
 
   @override
@@ -195,5 +289,11 @@ class ChatController extends GetxController {
     listener.cancel();
     myScrollController.dispose();
     myInputController.dispose();
+  }
+
+  @override
+  void onClose(){
+    super.onClose();
+    clearMsgNum(doc_id);
   }
 }

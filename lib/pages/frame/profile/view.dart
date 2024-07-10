@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chatty/common/values/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -12,24 +13,24 @@ class ProfilePage extends GetView<ProfileController> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: _buildAppBar(),
-        body: SafeArea(
-          child: CustomScrollView(
-            slivers: [
-              SliverToBoxAdapter(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Column(
-                    children: [
-                      _buildProfilePhoto(),
-                      _buildCompleteBtn(),
-                      _buildLogOutBtn(),
-                    ],
-                  ),
-                ),
-              )
-            ],
-          ),
-        ));
+        body: Obx(() => SafeArea(
+              child: CustomScrollView(
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Column(
+                        children: [
+                          _buildProfilePhoto(),
+                          _buildCompleteBtn(),
+                          _buildLogOutBtn(),
+                        ],
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            )));
   }
 
   AppBar _buildAppBar() {
@@ -61,10 +62,20 @@ class ProfilePage extends GetView<ProfileController> {
                     blurRadius: 2,
                     spreadRadius: 1)
               ]),
-          child: Image.asset(
-            "assets/images/account_header.png",
-            fit: BoxFit.cover,
-          ),
+          child: controller.state.profileDetail.value.avatar != null
+              ? CachedNetworkImage(
+                  imageUrl: controller.state.profileDetail.value.avatar!,
+                  fit: BoxFit.fill,
+                  imageBuilder: (context, imageProvider) => Container(
+                    decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        image: DecorationImage(image: imageProvider)),
+                  ),
+                )
+              : Image.asset(
+                  "assets/images/account_header.png",
+                  fit: BoxFit.cover,
+                ),
         ),
         Positioned(
           right: 0,
